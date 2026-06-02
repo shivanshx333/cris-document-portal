@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRIS Document Portal</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: #eef1f5;
+            color: #1a1a2e;
+            min-height: 100vh;
+        }
+
+        /* ── Navbar ── */
+        .navbar {
+            background: #0f2a4a;
+            color: #fff;
+            padding: 0 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .navbar-logo {
+            width: 34px;
+            height: 34px;
+            background: #fff;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 14px;
+            color: #0f2a4a;
+            letter-spacing: 0.5px;
+        }
+
+        .navbar-title {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .navbar-subtitle {
+            font-size: 12px;
+            color: #8fb4d9;
+            font-weight: 400;
+        }
+
+        .navbar-right {
+            font-size: 12px;
+            color: #8fb4d9;
+        }
+
+        /* ── Main container ── */
+        .container {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 28px 20px 60px;
+        }
+
+        /* ── Flash messages ── */
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+
+        .flash {
+            padding: 12px 18px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            border: 1px solid;
+        }
+
+        .flash-success {
+            background: #e8f5e9;
+            color: #1b5e20;
+            border-color: #a5d6a7;
+        }
+
+        .flash-error {
+            background: #fbe9e7;
+            color: #b71c1c;
+            border-color: #ef9a9a;
+        }
+
+        .flash-icon { font-size: 16px; }
+
+        /* ── Page header ── */
+        .page-header {
+            margin-bottom: 24px;
+        }
+
+        .page-header h1 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #0f2a4a;
+        }
+
+        .page-header p {
+            font-size: 13px;
+            color: #5a6a7a;
+            margin-top: 4px;
+        }
+
+        /* ── Cards ── */
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid #d5dce6;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            margin-bottom: 24px;
+        }
+
+        .card-header {
+            padding: 16px 22px;
+            border-bottom: 1px solid #e8ecf1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-header h2 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1a2a3a;
+        }
+
+        .card-body {
+            padding: 22px;
+        }
+
+        /* ── Upload form ── */
+        .upload-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .file-input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        .file-input-wrapper input[type="file"] {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #c5cdd8;
+            border-radius: 5px;
+            font-size: 13px;
+            color: #333;
+            background: #f8f9fb;
+            cursor: pointer;
+        }
+
+        .file-input-wrapper input[type="file"]:hover {
+            border-color: #8fa8c4;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 10px 22px;
+            border: none;
+            border-radius: 5px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: background 0.15s;
+        }
+
+        .btn-primary {
+            background: #1a4b7a;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #0f3460;
+        }
+
+        .btn-download {
+            background: #f0f4f8;
+            color: #1a4b7a;
+            border: 1px solid #c5d3e3;
+            padding: 6px 14px;
+            font-size: 12px;
+        }
+
+        .btn-download:hover {
+            background: #dce6f0;
+        }
+
+        .btn-delete {
+            background: #fff5f5;
+            color: #a33;
+            border: 1px solid #e8b4b4;
+            padding: 6px 14px;
+            font-size: 12px;
+        }
+
+        .btn-delete:hover {
+            background: #fce4e4;
+        }
+
+        /* ── File table ── */
+        .file-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .file-table thead th {
+            text-align: left;
+            padding: 10px 14px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: #5a6a7a;
+            background: #f5f7fa;
+            border-bottom: 1px solid #e0e5ec;
+        }
+
+        .file-table tbody tr {
+            border-bottom: 1px solid #edf0f4;
+        }
+
+        .file-table tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        .file-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .file-table td {
+            padding: 12px 14px;
+            font-size: 13px;
+            vertical-align: middle;
+        }
+
+        .file-table .col-name {
+            font-weight: 500;
+            color: #1a2a3a;
+            word-break: break-all;
+        }
+
+        .file-table .col-size {
+            color: #6b7a8a;
+            white-space: nowrap;
+        }
+
+        .file-table .col-actions {
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .action-group {
+            display: inline-flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .action-group form {
+            display: inline;
+            margin: 0;
+            padding: 0;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #e3ecf5;
+            color: #2c5282;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 2px 10px;
+            border-radius: 10px;
+        }
+
+        /* ── Empty state ── */
+        .empty-state {
+            text-align: center;
+            padding: 48px 20px;
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+            opacity: 0.3;
+        }
+
+        .empty-state h3 {
+            font-size: 16px;
+            color: #5a6a7a;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .empty-state p {
+            font-size: 13px;
+            color: #8a96a4;
+        }
+
+        /* ── Footer ── */
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 11px;
+            color: #8a96a4;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 600px) {
+            .navbar { padding: 0 16px; }
+            .container { padding: 18px 12px 40px; }
+            .upload-row { flex-direction: column; }
+            .upload-row .btn { width: 100%; }
+            .file-table .col-size { display: none; }
+            .file-table thead th:nth-child(2) { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <div class="navbar-logo">CRIS</div>
+            <div>
+                <div class="navbar-title">Document Portal</div>
+                <div class="navbar-subtitle">Centre for Railway Information Systems</div>
+            </div>
+        </div>
+        <div class="navbar-right">Delhi Division &bull; Intern Project</div>
+    </nav>
+
+    <!-- Main -->
+    <div class="container">
+
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-messages">
+            {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">
+                <span class="flash-icon">
+                    {% if category == 'success' %}&#10003;{% else %}&#10007;{% endif %}
+                </span>
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <!-- Page header -->
+        <div class="page-header">
+            <h1>Document Management</h1>
+            <p>Upload, view, and manage documents securely from this portal.</p>
+        </div>
+
+        <!-- Upload card -->
+        <div class="card">
+            <div class="card-header">
+                <h2>Upload Document</h2>
+            </div>
+            <div class="card-body">
+                <form class="upload-row" action="/upload" method="POST" enctype="multipart/form-data">
+                    <div class="file-input-wrapper">
+                        <input type="file" name="file" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Upload File</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- File list card -->
+        <div class="card">
+            <div class="card-header">
+                <h2>Uploaded Documents</h2>
+                <span class="badge">{{ files | length }} file{{ 's' if files | length != 1 else '' }}</span>
+            </div>
+            <div class="card-body" style="padding: 0;">
+                {% if files %}
+                <table class="file-table">
+                    <thead>
+                        <tr>
+                            <th>File Name</th>
+                            <th>Size</th>
+                            <th style="text-align: right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for file in files %}
+                        <tr>
+                            <td class="col-name">{{ file.name }}</td>
+                            <td class="col-size">{{ file.size }}</td>
+                            <td class="col-actions">
+                                <div class="action-group">
+                                    <a href="/download/{{ file.name }}" class="btn btn-download">Download</a>
+                                    <form action="/delete/{{ file.name }}" method="POST"
+                                          onsubmit="return confirm('Delete &quot;{{ file.name }}&quot;? This cannot be undone.');">
+                                        <button type="submit" class="btn btn-delete">Delete</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon">&#128194;</div>
+                    <h3>No documents uploaded</h3>
+                    <p>Use the upload section above to add your first document.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="footer">
+            CRIS Document Portal &bull; Centre for Railway Information Systems &bull; Ministry of Railways, India
+        </div>
+    </div>
+
+</body>
+</html>

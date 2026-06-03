@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documents · CRIS Document Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+    <div id="main-content">
+        <div class="page-header">
+            <div class="breadcrumb">Home / <span>Documents</span></div>
+            <h1>Document Management <span class="page-title-hi">दस्तावेज़ प्रबंधन</span></h1>
+            <p>Upload, search, preview and manage documents securely from this portal.</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-bar">
+            <div class="stat-card">
+                <span class="stat-label">Total Documents</span>
+                <span class="stat-value" id="stat-total" data-counter="0">0</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Storage Used</span>
+                <span class="stat-value" id="stat-storage">0 B</span>
+            </div>
+        </div>
+
+        <!-- Upload card -->
+        <div class="card">
+            <div class="card-header"><h2>Upload Document</h2></div>
+            <div class="card-body">
+                <form id="upload-form">
+                    <label class="drop-zone" id="drop-zone" for="file-input">
+                        <input type="file" name="files" id="file-input" multiple hidden>
+                        <svg class="drop-zone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <div class="drop-zone-text">
+                            <strong>Click to browse</strong> or drag &amp; drop files here
+                        </div>
+                        <div class="drop-zone-hint">
+                            Maximum 16 MB per file &bull; Multiple files allowed
+                        </div>
+                        <div class="drop-zone-files" id="drop-zone-files"></div>
+                    </label>
+                    <div class="upload-actions">
+                        <button type="submit" class="btn btn-primary" id="upload-btn">
+                            <span id="upload-btn-text">Upload File(s)</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- File list -->
+        <div class="card">
+            <div class="card-header">
+                <h2>Uploaded Documents</h2>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <div class="search-wrap" id="search-wrap" style="display: none;">
+                        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <input type="text" class="search-input" id="search-input" placeholder="Search by file name...">
+                        <span class="search-shortcut">/</span>
+                    </div>
+                    <span class="badge" id="file-count">0 files</span>
+                </div>
+            </div>
+            <div class="card-body" style="padding: 0;" id="file-list-body">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Preview modal -->
+    <div class="modal" id="preview-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="preview-modal-title"></div>
+                <button type="button" class="modal-close" id="preview-modal-close" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body" id="preview-modal-body"></div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script>
+        (async function () {
+            if (!requireAuth()) return;
+            renderAppShell('documents');
+            showFlashIfAny();
+
+            const files = await listFilesEnriched();
+            const totalBytes = files.reduce((s, f) => s + f.size_bytes, 0);
+
+            // Stats
+            const totalEl = document.getElementById('stat-total');
+            totalEl.setAttribute('data-counter', files.length);
+            totalEl.textContent = files.length;
+            document.getElementById('stat-storage').textContent = totalBytes ? formatSize(totalBytes) : '0 B';
+            document.getElementById('file-count').textContent = files.length + ' file' + (files.length === 1 ? '' : 's');
+            animateCounters();
+
+            // Render file list
+            const body = document.getElementById('file-list-body');
+            if (files.length === 0) {
+                body.innerHTML = `
+                    <div class="empty-state">
+                        <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M50 18 L50 56 M50 18 L36 32 M50 18 L64 32"></path>
+                            <path d="M22 60 L22 80 L78 80 L78 60"></path>
+                        </svg>
+                        <h3>No documents uploaded</h3>
+                        <p>Use the upload section above to add your first document.</p>
+                    </div>`;
+            } else {
+                document.getElementById('search-wrap').style.display = '';
+                body.innerHTML = `
+                    <table class="file-table" id="file-table">
+                        <thead>
+                            <tr>
+                                <th class="sortable" data-sort="name">File Name <span class="sort-arrow"></span></th>
+                                <th class="sortable" data-sort="size">Size <span class="sort-arrow"></span></th>
+                                <th class="sortable active" data-sort="modified">Uploaded <span class="sort-arrow">&#9660;</span></th>
+                                <th style="text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${files.map(f => `
+                            <tr data-name="${escapeHtml(f.name)}" data-size="${f.size_bytes}" data-modified="${f.modified_ts}">
+                                <td class="col-name">
+                                    <div class="file-name-wrap">
+                                        <div class="file-icon ${f.icon_class}">${f.category_label}</div>
+                                        <span class="file-name-text">${escapeHtml(f.name)}</span>
+                                    </div>
+                                </td>
+                                <td class="col-size">${escapeHtml(f.size)}</td>
+                                <td class="col-date">${escapeHtml(f.modified)}</td>
+                                <td class="col-actions">
+                                    <div class="action-group">
+                                        ${f.previewable ? `<button type="button" class="btn btn-sm btn-preview" data-preview-name="${escapeHtml(f.name)}" data-preview-ext="${escapeHtml(f.extension)}">Preview</button>` : ''}
+                                        <button type="button" class="btn btn-sm btn-download" data-download="${escapeHtml(f.name)}">Download</button>
+                                        <button type="button" class="btn btn-sm btn-delete" data-delete="${escapeHtml(f.name)}">Delete</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    <div id="no-results" class="empty-state" style="display: none;">
+                        <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="42" cy="42" r="22"></circle>
+                            <line x1="60" y1="60" x2="80" y2="80"></line>
+                        </svg>
+                        <h3>No matches found</h3>
+                        <p>Try a different search term.</p>
+                    </div>
+                `;
+                wireFileListInteractions();
+            }
+
+            // ── Drop zone ──
+            const dropZone  = document.getElementById('drop-zone');
+            const fileInput = document.getElementById('file-input');
+            const fileLabel = document.getElementById('drop-zone-files');
+            const form      = document.getElementById('upload-form');
+            const btn       = document.getElementById('upload-btn');
+
+            ['dragenter', 'dragover'].forEach(e => {
+                dropZone.addEventListener(e, ev => {
+                    ev.preventDefault(); ev.stopPropagation();
+                    dropZone.classList.add('drag-over');
+                });
+            });
+            ['dragleave', 'drop'].forEach(e => {
+                dropZone.addEventListener(e, ev => {
+                    ev.preventDefault(); ev.stopPropagation();
+                    dropZone.classList.remove('drag-over');
+                });
+            });
+            dropZone.addEventListener('drop', e => {
+                fileInput.files = e.dataTransfer.files;
+                updateLabel();
+            });
+            fileInput.addEventListener('change', updateLabel);
+            window.addEventListener('dragover', e => e.preventDefault());
+            window.addEventListener('drop', e => e.preventDefault());
+
+            function updateLabel() {
+                const arr = Array.from(fileInput.files);
+                if (arr.length === 0) { fileLabel.textContent = ''; return; }
+                if (arr.length === 1) { fileLabel.textContent = arr[0].name; return; }
+                fileLabel.textContent = arr.length + ' files selected';
+            }
+
+            form.addEventListener('submit', async e => {
+                e.preventDefault();
+                if (!fileInput.files || fileInput.files.length === 0) {
+                    showToast('No file selected.', 'error');
+                    return;
+                }
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner"></span><span>Uploading...</span>';
+                await handleUpload(fileInput.files);
+            });
+
+            function wireFileListInteractions() {
+                // Preview
+                document.querySelectorAll('.btn-preview').forEach(b => {
+                    b.addEventListener('click', () => openPreviewModal(b.dataset.previewName, b.dataset.previewExt));
+                });
+                // Download
+                document.querySelectorAll('[data-download]').forEach(b => {
+                    b.addEventListener('click', () => downloadFile(b.dataset.download));
+                });
+                // Delete
+                document.querySelectorAll('[data-delete]').forEach(b => {
+                    b.addEventListener('click', () => deleteFile(b.dataset.delete));
+                });
+                // Modal close
+                const modal = document.getElementById('preview-modal');
+                document.getElementById('preview-modal-close').addEventListener('click', closePreviewModal);
+                modal.addEventListener('click', e => { if (e.target === modal) closePreviewModal(); });
+                document.addEventListener('keydown', e => {
+                    if (e.key === 'Escape' && modal.classList.contains('open')) closePreviewModal();
+                });
+
+                // Search
+                const input = document.getElementById('search-input');
+                const table = document.getElementById('file-table');
+                const badge = document.getElementById('file-count');
+                const noResult = document.getElementById('no-results');
+                const rows = Array.from(table.querySelectorAll('tbody tr'));
+                input.addEventListener('input', () => {
+                    const q = input.value.trim().toLowerCase();
+                    let visible = 0;
+                    rows.forEach(row => {
+                        const name = (row.dataset.name || '').toLowerCase();
+                        const show = name.includes(q);
+                        row.style.display = show ? '' : 'none';
+                        if (show) visible++;
+                    });
+                    badge.textContent = visible + ' file' + (visible === 1 ? '' : 's');
+                    noResult.style.display = visible === 0 ? '' : 'none';
+                    table.style.display = visible === 0 ? 'none' : '';
+                });
+                document.addEventListener('keydown', e => {
+                    const tag = e.target.tagName;
+                    if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+                    if (e.key === '/' && document.activeElement !== input) {
+                        e.preventDefault();
+                        input.focus(); input.select();
+                    }
+                });
+
+                // Sortable
+                const headers = table.querySelectorAll('th.sortable');
+                const tbody   = table.querySelector('tbody');
+                let state = { col: 'modified', dir: 'desc' };
+                headers.forEach(h => {
+                    h.addEventListener('click', () => {
+                        const col = h.dataset.sort;
+                        if (state.col === col) state.dir = state.dir === 'asc' ? 'desc' : 'asc';
+                        else { state.col = col; state.dir = col === 'modified' ? 'desc' : 'asc'; }
+                        sortRows(); updateArrows();
+                    });
+                });
+                function sortRows() {
+                    const rs = Array.from(tbody.querySelectorAll('tr'));
+                    rs.sort((a, b) => {
+                        let va = a.dataset[state.col], vb = b.dataset[state.col];
+                        if (state.col === 'size' || state.col === 'modified') {
+                            va = parseInt(va, 10) || 0; vb = parseInt(vb, 10) || 0;
+                        } else {
+                            va = String(va).toLowerCase(); vb = String(vb).toLowerCase();
+                        }
+                        if (va < vb) return state.dir === 'asc' ? -1 : 1;
+                        if (va > vb) return state.dir === 'asc' ? 1 : -1;
+                        return 0;
+                    });
+                    rs.forEach(r => tbody.appendChild(r));
+                }
+                function updateArrows() {
+                    headers.forEach(h => {
+                        const arrow = h.querySelector('.sort-arrow');
+                        h.classList.remove('active');
+                        if (h.dataset.sort === state.col) {
+                            h.classList.add('active');
+                            arrow.innerHTML = state.dir === 'asc' ? '&#9650;' : '&#9660;';
+                        } else { arrow.innerHTML = ''; }
+                    });
+                }
+            }
+        })();
+    </script>
+</body>
+</html>

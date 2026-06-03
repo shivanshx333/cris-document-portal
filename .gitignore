@@ -8,6 +8,5 @@ build/
 .env
 venv/
 env/
-.claude/
 *.tmp
 *.log

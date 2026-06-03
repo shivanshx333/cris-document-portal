@@ -1,0 +1,488 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard · CRIS Document Portal{% endblock %}
+
+{% block extra_styles %}
+        /* ── Dashboard stat tiles ── */
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-bottom: 22px;
+        }
+        .stat-tile {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px 18px;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            position: relative;
+            overflow: hidden;
+            transition: transform var(--transition), box-shadow var(--transition);
+        }
+        .stat-tile:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .stat-tile::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 14px;
+            bottom: 14px;
+            width: 3px;
+            background: var(--navy-soft);
+            border-radius: 0 2px 2px 0;
+        }
+        .stat-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 8px;
+            background: #e8f0f9;
+            color: var(--navy);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .stat-icon svg { width: 20px; height: 20px; }
+        .stat-icon-amber  { background: #fef3e2; color: #b45309; }
+        .stat-icon-emerald{ background: #e6f4ec; color: #1e6b3a; }
+        .stat-icon-violet { background: #efeafa; color: #5b3a99; }
+        .stat-tile-info { line-height: 1.3; min-width: 0; }
+        .stat-tile-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+        .stat-tile-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--navy);
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.5px;
+            margin-top: 2px;
+        }
+
+        /* ── Chart grid ── */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.4fr;
+            gap: 18px;
+            margin-bottom: 22px;
+        }
+        .chart-wrap {
+            position: relative;
+            height: 240px;
+        }
+
+        /* ── Recent files ── */
+        .recent-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        .recent-list li {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 22px;
+            border-bottom: 1px solid var(--border-soft);
+            font-size: 13px;
+            transition: background var(--transition);
+        }
+        .recent-list li:last-child { border-bottom: none; }
+        .recent-list li:hover { background: #f7faff; }
+        .recent-list .file-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 34px; height: 34px;
+            border-radius: 5px;
+            font-size: 9px;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: 0.5px;
+            box-shadow: inset 0 -2px 0 rgba(0,0,0,0.18);
+            flex-shrink: 0;
+        }
+        .icon-pdf{background:#b83227;} .icon-doc{background:#1f4e8c;} .icon-xls{background:#1d6841;}
+        .icon-ppt{background:#b04a18;} .icon-img{background:#5b3a99;} .icon-zip{background:#95620e;}
+        .icon-txt{background:#3e4855;} .icon-generic{background:#586471;}
+        .recent-list .name {
+            font-weight: 500;
+            color: var(--text);
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .recent-list .time {
+            font-size: 12px;
+            color: var(--text-muted);
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* ── Activity feed ── */
+        .activity-feed {
+            list-style: none;
+            margin: 0;
+            padding: 12px 0;
+        }
+        .activity-feed li {
+            display: flex;
+            gap: 12px;
+            padding: 9px 22px;
+            font-size: 13px;
+            position: relative;
+        }
+        .activity-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--navy-soft);
+            border-radius: 50%;
+            margin-top: 6px;
+            flex-shrink: 0;
+            box-shadow: 0 0 0 3px rgba(26, 75, 122, 0.12);
+        }
+        .activity-body { flex: 1; line-height: 1.5; min-width: 0; }
+        .activity-text { color: var(--text); }
+        .activity-text strong { color: var(--navy); font-weight: 600; }
+        .activity-meta {
+            font-size: 11.5px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+        .empty-mini {
+            padding: 28px 20px;
+            text-align: center;
+            font-size: 12.5px;
+            color: var(--text-muted);
+        }
+
+        /* ── Welcome banner ── */
+        .welcome-banner {
+            background: linear-gradient(120deg, var(--navy) 0%, var(--navy-soft) 100%);
+            color: #fff;
+            border-radius: var(--radius);
+            padding: 22px 26px;
+            margin-bottom: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .welcome-banner::before {
+            content: '';
+            position: absolute;
+            top: -60px;
+            right: -60px;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,153,51,0.18) 0%, transparent 60%);
+        }
+        .welcome-text { position: relative; z-index: 1; }
+        .welcome-text h2 {
+            font-size: 19px;
+            font-weight: 700;
+            letter-spacing: -0.2px;
+            margin-bottom: 4px;
+        }
+        .welcome-text p { font-size: 13px; color: #cbd9e8; }
+        .welcome-action {
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+            padding: 9px 18px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            white-space: nowrap;
+            position: relative;
+            z-index: 1;
+            transition: background var(--transition);
+        }
+        .welcome-action:hover { background: rgba(255,255,255,0.2); }
+
+        @media (max-width: 1000px) {
+            .dashboard-stats { grid-template-columns: repeat(2, 1fr); }
+            .charts-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 600px) {
+            .welcome-banner { flex-direction: column; align-items: flex-start; }
+        }
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="breadcrumb">Home / <span>Dashboard</span></div>
+    <h1>Dashboard <span class="page-title-hi">डैशबोर्ड</span></h1>
+    <p>Overview of document activity across your portal.</p>
+</div>
+
+<!-- Welcome banner -->
+<div class="welcome-banner">
+    <div class="welcome-text">
+        <h2>Welcome back, {{ current_name.split()[0] }}</h2>
+        <p>You're signed in as <strong style="color:#fff;">{{ current_role }}</strong> · {{ current_designation }}</p>
+    </div>
+    <a href="{{ url_for('documents') }}" class="welcome-action">Go to Documents →</a>
+</div>
+
+<!-- Stats -->
+<div class="dashboard-stats">
+    <div class="stat-tile">
+        <div class="stat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+            </svg>
+        </div>
+        <div class="stat-tile-info">
+            <div class="stat-tile-label">Total Documents</div>
+            <div class="stat-tile-value" data-counter="{{ total_files }}">{{ total_files }}</div>
+        </div>
+    </div>
+    <div class="stat-tile">
+        <div class="stat-icon stat-icon-emerald">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 12H2"></path>
+                <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
+            </svg>
+        </div>
+        <div class="stat-tile-info">
+            <div class="stat-tile-label">Storage Used</div>
+            <div class="stat-tile-value">{{ total_size }}</div>
+        </div>
+    </div>
+    <div class="stat-tile">
+        <div class="stat-icon stat-icon-amber">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+        </div>
+        <div class="stat-tile-info">
+            <div class="stat-tile-label">Uploaded Today</div>
+            <div class="stat-tile-value" data-counter="{{ today_count }}">{{ today_count }}</div>
+        </div>
+    </div>
+    <div class="stat-tile">
+        <div class="stat-icon stat-icon-violet">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+        </div>
+        <div class="stat-tile-info">
+            <div class="stat-tile-label">Your Role</div>
+            <div class="stat-tile-value" style="font-size: 17px;">{{ current_role }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts -->
+<div class="charts-grid">
+    <div class="card">
+        <div class="card-header">
+            <h2>Document Types</h2>
+        </div>
+        <div class="card-body">
+            {% if type_chart.labels %}
+            <div class="chart-wrap">
+                <canvas id="types-chart"></canvas>
+            </div>
+            {% else %}
+            <div class="empty-mini">No documents yet — chart will appear after uploads.</div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header">
+            <h2>Uploads · Last 7 Days</h2>
+        </div>
+        <div class="card-body">
+            <div class="chart-wrap">
+                <canvas id="uploads-chart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent files + activity -->
+<div class="charts-grid">
+    <div class="card">
+        <div class="card-header">
+            <h2>Recent Documents</h2>
+            <a href="{{ url_for('documents') }}" class="card-link">View all →</a>
+        </div>
+        <div class="card-body" style="padding: 0;">
+            {% if recent_files %}
+            <ul class="recent-list">
+                {% for f in recent_files %}
+                <li>
+                    <div class="file-icon {{ f.icon_class }}">{{ f.category_label }}</div>
+                    <span class="name">{{ f.name }}</span>
+                    <span class="time">{{ f.modified }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <div class="empty-mini">No documents uploaded yet.</div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header">
+            <h2>Recent Activity</h2>
+            <a href="{{ url_for('activity') }}" class="card-link">View all →</a>
+        </div>
+        <div class="card-body" style="padding: 0;">
+            {% if recent_activity %}
+            <ul class="activity-feed">
+                {% for a in recent_activity %}
+                <li>
+                    <div class="activity-dot"></div>
+                    <div class="activity-body">
+                        <div class="activity-text">
+                            <strong>{{ a.user }}</strong> {{ a.action | lower }}{% if a.target %} <em style="color: var(--text-soft); font-style: normal;">{{ a.target }}</em>{% endif %}
+                        </div>
+                        <div class="activity-meta">{{ a.time }} · {{ a.role }}</div>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <div class="empty-mini">No activity recorded yet.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    // Stat counter animation
+    (function () {
+        document.querySelectorAll('[data-counter]').forEach(el => {
+            const target = parseInt(el.dataset.counter, 10) || 0;
+            if (target === 0) return;
+            const duration = 700;
+            const start = performance.now();
+            el.textContent = '0';
+            function step(now) {
+                const t = Math.min((now - start) / duration, 1);
+                const eased = 1 - Math.pow(1 - t, 3);
+                el.textContent = Math.round(target * eased);
+                if (t < 1) requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
+        });
+    })();
+
+    // Chart.js shared options
+    const chartFont = {
+        family: 'Inter, sans-serif',
+        size: 11,
+    };
+
+    const typeData = {{ type_chart | tojson }};
+    const uploadData = {{ upload_chart | tojson }};
+
+    const typeColors = ['#b83227', '#1f4e8c', '#1d6841', '#b04a18', '#5b3a99', '#95620e', '#3e4855', '#586471'];
+
+    // File types donut
+    if (typeData.labels && typeData.labels.length) {
+        new Chart(document.getElementById('types-chart'), {
+            type: 'doughnut',
+            data: {
+                labels: typeData.labels,
+                datasets: [{
+                    data: typeData.values,
+                    backgroundColor: typeColors,
+                    borderColor: '#fff',
+                    borderWidth: 2,
+                }],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '62%',
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            font: chartFont,
+                            color: '#4a5a70',
+                            boxWidth: 12,
+                            padding: 12,
+                        },
+                    },
+                    tooltip: {
+                        backgroundColor: '#0d2747',
+                        titleFont: chartFont,
+                        bodyFont: chartFont,
+                        padding: 10,
+                        cornerRadius: 6,
+                    },
+                },
+            },
+        });
+    }
+
+    // Uploads bar chart
+    new Chart(document.getElementById('uploads-chart'), {
+        type: 'bar',
+        data: {
+            labels: uploadData.labels,
+            datasets: [{
+                label: 'Files Uploaded',
+                data: uploadData.values,
+                backgroundColor: '#1a4b7a',
+                hoverBackgroundColor: '#0d2747',
+                borderRadius: 4,
+                maxBarThickness: 36,
+            }],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#0d2747',
+                    titleFont: chartFont,
+                    bodyFont: chartFont,
+                    padding: 10,
+                    cornerRadius: 6,
+                },
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        font: chartFont,
+                        color: '#7a8696',
+                        precision: 0,
+                    },
+                    grid: { color: '#e8ecf2' },
+                },
+                x: {
+                    ticks: { font: chartFont, color: '#7a8696' },
+                    grid: { display: false },
+                },
+            },
+        },
+    });
+</script>
+{% endblock %}

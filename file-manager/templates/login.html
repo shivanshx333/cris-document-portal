@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In · CRIS Document Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --navy:        #0d2747;
+            --navy-deep:   #08182e;
+            --navy-soft:   #1a4b7a;
+            --navy-hover:  #0f3460;
+            --accent:      #2c5aa0;
+            --saffron:     #ff9933;
+            --bg:          #eef2f7;
+            --card:        #ffffff;
+            --border:      #d8dee8;
+            --text:        #18243a;
+            --text-soft:   #4a5a70;
+            --text-muted:  #7a8696;
+            --error-bg:    #fdecea;
+            --error-fg:    #9c1a1a;
+            --error-br:    #e8a8a4;
+            --shadow-lg:   0 12px 40px rgba(15, 39, 71, 0.15);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .hi {
+            font-family: 'Noto Sans Devanagari', 'Inter', sans-serif;
+        }
+
+        /* ── Topbar ── */
+        .login-topbar {
+            background: var(--navy);
+            color: #fff;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            padding: 0 28px;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.18);
+        }
+        .login-topbar-brand { display: flex; align-items: center; gap: 12px; }
+        .login-topbar-logo {
+            width: 34px; height: 34px;
+            background: #fff;
+            color: var(--navy);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 12px;
+            letter-spacing: 0.6px;
+        }
+        .login-topbar-title { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
+        .login-topbar-sub { font-size: 11px; color: #9bb5d4; margin-top: 2px; }
+
+        /* ── Tricolor ── */
+        .tricolor { display: flex; height: 3px; }
+        .tricolor > div { flex: 1; }
+        .tricolor .saffron { background: #ff9933; }
+        .tricolor .white   { background: #ffffff; }
+        .tricolor .green   { background: #138808; }
+
+        /* ── Main area ── */
+        .login-shell {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            background:
+              linear-gradient(135deg, rgba(13, 39, 71, 0.94) 0%, rgba(26, 75, 122, 0.94) 100%),
+              radial-gradient(circle at 30% 40%, rgba(255,255,255,0.04) 0%, transparent 50%);
+            min-height: 0;
+        }
+
+        /* ── Left: brand panel ── */
+        .login-brand {
+            color: #fff;
+            padding: 60px 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .login-brand::before {
+            content: '';
+            position: absolute;
+            top: -120px;
+            right: -120px;
+            width: 360px;
+            height: 360px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 153, 51, 0.12) 0%, transparent 65%);
+        }
+        .login-brand::after {
+            content: '';
+            position: absolute;
+            bottom: -100px;
+            left: -100px;
+            width: 320px;
+            height: 320px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(19, 136, 8, 0.1) 0%, transparent 65%);
+        }
+        .login-brand-content { position: relative; z-index: 1; max-width: 440px; }
+
+        .login-brand-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.16);
+            border-radius: 18px;
+            padding: 5px 12px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.7px;
+            text-transform: uppercase;
+            color: #cbd9e8;
+            margin-bottom: 24px;
+        }
+        .login-brand-tag .dot {
+            width: 6px; height: 6px;
+            background: var(--saffron);
+            border-radius: 50%;
+        }
+        .login-brand h1 {
+            font-size: 36px;
+            font-weight: 700;
+            line-height: 1.1;
+            letter-spacing: -0.6px;
+            margin-bottom: 12px;
+        }
+        .login-brand .h1-hi {
+            display: block;
+            font-size: 22px;
+            font-weight: 500;
+            color: #9bb5d4;
+            font-family: 'Noto Sans Devanagari', sans-serif;
+            margin-top: 6px;
+        }
+        .login-brand .lead {
+            font-size: 14.5px;
+            color: #cbd9e8;
+            line-height: 1.6;
+            margin-bottom: 32px;
+        }
+        .feature-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .feature-list li {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13.5px;
+            color: #cbd9e8;
+        }
+        .feature-list svg {
+            width: 18px; height: 18px;
+            color: var(--saffron);
+            flex-shrink: 0;
+        }
+        .login-brand-foot {
+            margin-top: 50px;
+            padding-top: 24px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            font-size: 11.5px;
+            color: #8aa5c4;
+            line-height: 1.6;
+            position: relative;
+            z-index: 1;
+        }
+        .login-brand-foot strong { color: #cbd9e8; }
+
+        /* ── Right: login card ── */
+        .login-form-wrap {
+            background: var(--bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 30px;
+        }
+        .login-card {
+            background: var(--card);
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-lg);
+            width: 100%;
+            max-width: 420px;
+            padding: 36px 36px 28px;
+        }
+        .login-card-header { margin-bottom: 26px; }
+        .login-card-header h2 {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--navy);
+            margin-bottom: 4px;
+            letter-spacing: -0.2px;
+        }
+        .login-card-header p {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .login-error {
+            background: var(--error-bg);
+            color: var(--error-fg);
+            border: 1px solid var(--error-br);
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+        .login-error svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+        .form-group { margin-bottom: 16px; }
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-soft);
+            margin-bottom: 6px;
+            letter-spacing: 0.2px;
+        }
+        .form-group label .hi {
+            font-weight: 400;
+            color: var(--text-muted);
+            font-size: 11.5px;
+            margin-left: 6px;
+        }
+        .form-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            color: var(--text);
+            background: #fcfdfe;
+            transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: var(--navy-soft);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(26, 75, 122, 0.12);
+        }
+
+        .input-with-icon {
+            position: relative;
+        }
+        .input-with-icon .input-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+        .input-with-icon .form-input {
+            padding-left: 36px;
+        }
+
+        /* ── Captcha ── */
+        .captcha-row {
+            display: grid;
+            grid-template-columns: 130px 1fr auto;
+            gap: 10px;
+            align-items: stretch;
+        }
+        .captcha-display {
+            background: repeating-linear-gradient(
+                45deg,
+                #e8ecf2,
+                #e8ecf2 4px,
+                #f1f4f8 4px,
+                #f1f4f8 8px
+            );
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Courier New', monospace;
+            font-weight: 700;
+            font-size: 18px;
+            letter-spacing: 5px;
+            color: var(--navy);
+            text-decoration: line-through;
+            text-decoration-color: rgba(13, 39, 71, 0.25);
+            user-select: none;
+            text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.6);
+        }
+        .captcha-refresh {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            width: 38px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-soft);
+            transition: background 180ms ease, color 180ms ease, border-color 180ms ease;
+        }
+        .captcha-refresh:hover {
+            background: #eef3f9;
+            color: var(--navy);
+            border-color: var(--navy-soft);
+        }
+        .captcha-refresh svg { width: 14px; height: 14px; }
+
+        .login-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 8px 0 18px;
+            font-size: 12px;
+        }
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-soft);
+            cursor: pointer;
+        }
+        .remember-me input { margin: 0; cursor: pointer; }
+        .forgot-link {
+            color: var(--navy-soft);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .forgot-link:hover { color: var(--navy); text-decoration: underline; }
+
+        .login-btn {
+            width: 100%;
+            padding: 11px;
+            background: var(--navy);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            letter-spacing: 0.3px;
+            font-family: inherit;
+            transition: background 180ms ease, transform 80ms ease;
+        }
+        .login-btn:hover { background: var(--navy-hover); }
+        .login-btn:active { transform: translateY(1px); }
+
+        .login-divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 22px 0 18px;
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+        }
+        .login-divider::before,
+        .login-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .demo-credentials {
+            background: #fff8eb;
+            border: 1px solid #f0d8a0;
+            border-radius: 6px;
+            padding: 12px 14px;
+            font-size: 12px;
+            color: #6b4a08;
+        }
+        .demo-credentials strong {
+            display: block;
+            margin-bottom: 6px;
+            color: #4a3406;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+            font-size: 10.5px;
+        }
+        .demo-credentials .cred-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 2px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #6b4a08;
+        }
+        .demo-credentials .cred-row span:first-child { color: #4a3406; font-weight: 700; }
+
+        .login-help-foot {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 11.5px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* ── Foot ── */
+        .login-page-foot {
+            background: var(--navy-deep);
+            color: #8aa5c4;
+            text-align: center;
+            padding: 14px 20px;
+            font-size: 11px;
+            line-height: 1.6;
+        }
+        .login-page-foot strong { color: #cbd9e8; }
+
+        /* ── Responsive ── */
+        @media (max-width: 880px) {
+            .login-shell { grid-template-columns: 1fr; }
+            .login-brand { display: none; }
+            .login-form-wrap { padding: 30px 16px; }
+            .login-card { padding: 28px 24px 22px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Topbar -->
+    <header class="login-topbar">
+        <div class="login-topbar-brand">
+            <div class="login-topbar-logo">CRIS</div>
+            <div>
+                <div class="login-topbar-title">Document Portal</div>
+                <div class="login-topbar-sub">Centre for Railway Information Systems</div>
+            </div>
+        </div>
+    </header>
+    <div class="tricolor" aria-hidden="true">
+        <div class="saffron"></div>
+        <div class="white"></div>
+        <div class="green"></div>
+    </div>
+
+    <!-- Shell -->
+    <div class="login-shell">
+        <!-- Left: brand panel -->
+        <div class="login-brand">
+            <div class="login-brand-content">
+                <span class="login-brand-tag"><span class="dot"></span> Government of India</span>
+                <h1>
+                    Secure Document<br>Management Portal
+                    <span class="h1-hi">सुरक्षित दस्तावेज़ प्रबंधन प्रणाली</span>
+                </h1>
+                <p class="lead">
+                    Internal portal for uploading, managing and retrieving departmental documents
+                    across Indian Railways units.
+                </p>
+                <ul class="feature-list">
+                    <li>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 6L9 17l-5-5"></path>
+                        </svg>
+                        Encrypted upload &amp; storage
+                    </li>
+                    <li>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 6L9 17l-5-5"></path>
+                        </svg>
+                        Role-based access control
+                    </li>
+                    <li>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 6L9 17l-5-5"></path>
+                        </svg>
+                        Audit logging of every action
+                    </li>
+                    <li>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 6L9 17l-5-5"></path>
+                        </svg>
+                        Built-in document preview
+                    </li>
+                </ul>
+                <div class="login-brand-foot">
+                    <strong>Centre for Railway Information Systems</strong><br>
+                    Ministry of Railways · Chanakyapuri, New Delhi 110021<br>
+                    For technical support: <strong>cris-helpdesk@cris.org.in</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: login form -->
+        <div class="login-form-wrap">
+            <div class="login-card">
+                <div class="login-card-header">
+                    <h2>Sign In <span class="hi" style="font-size: 16px; color: var(--text-muted); font-weight: 500;">साइन इन</span></h2>
+                    <p>Use your CRIS-issued credentials to continue</p>
+                </div>
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                {% for category, message in messages %}
+                {% if category == 'error' %}
+                <div class="login-error">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <span>{{ message }}</span>
+                </div>
+                {% endif %}
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+
+                <form method="POST" action="{{ url_for('login') }}" autocomplete="off">
+                    <div class="form-group">
+                        <label for="username">User ID <span class="hi">उपयोगकर्ता आईडी</span></label>
+                        <div class="input-with-icon">
+                            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                            <input type="text" id="username" name="username" class="form-input"
+                                   placeholder="Enter your User ID" required autofocus>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password <span class="hi">पासवर्ड</span></label>
+                        <div class="input-with-icon">
+                            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                            <input type="password" id="password" name="password" class="form-input"
+                                   placeholder="Enter your password" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="captcha">Captcha <span class="hi">कैप्चा</span></label>
+                        <div class="captcha-row">
+                            <div class="captcha-display" id="captcha-display">{{ captcha }}</div>
+                            <input type="text" id="captcha" name="captcha" class="form-input"
+                                   placeholder="Type captcha" required maxlength="5" autocomplete="off"
+                                   style="text-transform: uppercase;">
+                            <a href="{{ url_for('login') }}" class="captcha-refresh" title="Refresh captcha" aria-label="Refresh captcha">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="23 4 23 10 17 10"></polyline>
+                                    <polyline points="1 20 1 14 7 14"></polyline>
+                                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="login-options">
+                        <label class="remember-me">
+                            <input type="checkbox" name="remember"> Keep me signed in
+                        </label>
+                        <a href="#" class="forgot-link">Forgot password?</a>
+                    </div>
+
+                    <button type="submit" class="login-btn">Sign In Securely</button>
+                </form>
+
+                <div class="login-divider">Demo Access</div>
+
+                <div class="demo-credentials">
+                    <strong>For Evaluator / Reviewer</strong>
+                    <div class="cred-row"><span>admin</span><span>cris123</span></div>
+                    <div class="cred-row"><span>viewer</span><span>viewer123</span></div>
+                </div>
+
+                <div class="login-help-foot">
+                    By signing in you agree to comply with the<br>
+                    <strong>CRIS Acceptable Use Policy</strong> and Information Security guidelines.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Foot -->
+    <div class="login-page-foot">
+        <strong>CRIS Document Portal</strong> · Centre for Railway Information Systems · Ministry of Railways, Government of India<br>
+        © 2026 · Designed &amp; developed by CRIS, New Delhi
+    </div>
+
+</body>
+</html>
